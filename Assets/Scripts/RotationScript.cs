@@ -8,12 +8,16 @@ namespace Assets.Scripts
 
         private void Start()
         {
-
         }
 
         private void Update()
         {
-            transform.Rotate(Vector3.up, RotationSpeed*Time.deltaTime);
+            //transform.Rotate(Vector3.up, RotationSpeed*Time.deltaTime);
+        }
+
+        public void Rotate(float angle)
+        {
+            transform.rotation = Quaternion.Euler(new Vector3(0, angle, 0));
         }
     }
 }
