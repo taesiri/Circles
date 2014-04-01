@@ -74,7 +74,7 @@ namespace Assets.Scripts.Editor
                     objects[i].transform.RotateAround(currentObject.CenterTransform.position, Vector3.up, i*currentObject.Aangle);
                     objects[i].transform.parent = group.transform;
 
-                    var cfull = objects[i].AddComponent<Colorfull>();
+                    var cfull = objects[i].AddComponent<Colorful>();
                     cfull.MatColor = GeneratoeColor();
                 }
             }
