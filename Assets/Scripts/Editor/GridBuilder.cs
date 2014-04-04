@@ -60,9 +60,19 @@ namespace Assets.Scripts.Editor
             var currentObject = (Generator) target;
 
 
+            GroupScript prev = null;
             for (int j = 1; j < currentObject.Radius; j += currentObject.RIncerement)
             {
                 var group = new GameObject(string.Format("Circle Gorup {0}", j.ToString()));
+                var groupSCript = group.AddComponent<GroupScript>();
+
+                if (prev != null)
+                {
+                    groupSCript.PrevGroup = prev;
+                    prev.NextGroup = groupSCript;
+                }
+
+
                 group.transform.parent = currentObject.transform;
                 var rs = group.AddComponent<RotationScript>();
 
@@ -75,12 +85,15 @@ namespace Assets.Scripts.Editor
                     var objects = new GameObject[j*currentObject.NumberOfCircles];
 
                     objects[i] = (GameObject) Instantiate(currentObject.CirclePrefab, currentObject.CenterTransform.position + Vector3.right*j, Quaternion.identity);
+                    objects[i].name = string.Format("GenSphere {0}:{1}", j, i);
                     objects[i].transform.RotateAround(currentObject.CenterTransform.position, Vector3.up, i*currentObject.Aangle);
                     objects[i].transform.parent = group.transform;
                     objects[i].AddComponent<CircleScript>();
                     var cfull = objects[i].AddComponent<Colorful>();
                     cfull.MatColor = GeneratoeColor();
                 }
+
+                prev = groupSCript;
             }
         }
 
@@ -92,6 +105,8 @@ namespace Assets.Scripts.Editor
             for (int j = 1; j < currentObject.Radius; j += currentObject.RIncerement)
             {
                 var group = new GameObject(string.Format("Circle Gorup {0}", j.ToString()));
+                group.AddComponent<GroupScript>();
+
                 group.transform.parent = currentObject.transform;
                 var rs = group.AddComponent<RotationScript>();
 
@@ -104,6 +119,7 @@ namespace Assets.Scripts.Editor
                     var objects = new GameObject[currentObject.NumberOfCircles];
 
                     objects[i] = (GameObject) Instantiate(currentObject.CirclePrefab, currentObject.CenterTransform.position + Vector3.right*j, Quaternion.identity);
+                    objects[i].name = string.Format("GenSphere {0}:{1}", j, i);
                     objects[i].transform.RotateAround(currentObject.CenterTransform.position, Vector3.up, i*currentObject.Aangle);
                     objects[i].transform.parent = group.transform;
                     objects[i].AddComponent<CircleScript>();
