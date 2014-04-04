@@ -8,12 +8,13 @@ namespace Assets.Scripts
         public Transform Origin;
         private RotationScript _lastGroup;
 
+
+        private float _lastRotation;
+
         private void Update()
         {
             if (Input.touchCount > 0)
             {
-                Debug.Log(Input.touches[0].position);
-
                 if (Input.touches[0].phase == TouchPhase.Began)
                 {
                     var ray = Camera.main.ScreenPointToRay(Input.touches[0].position);
@@ -24,10 +25,23 @@ namespace Assets.Scripts
 
                     if (hitInfo.collider)
                     {
-                        hitInfo.collider.gameObject.renderer.material.color = Color.red;
+                        var circle = hitInfo.collider.gameObject.GetComponent<CircleScript>();
+                        if (circle)
+                            circle.SetMatColorForSeconds(Color.red, 10);
 
                         _isHit = true;
                         _lastGroup = hitInfo.collider.gameObject.transform.parent.GetComponent<RotationScript>();
+
+                        //=============================================================================================
+
+                        var wPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
+
+                        var deltaX = Origin.transform.position.z - wPoint.z;
+                        var deltaY = wPoint.x - Origin.transform.position.x;
+
+                        var angle = Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
+
+                        _lastRotation = angle;
                     }
                 }
                 else if (Input.touches[0].phase != TouchPhase.Ended)
@@ -36,15 +50,15 @@ namespace Assets.Scripts
                     {
                         var wPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
 
-                        var deltaX = wPoint.z - Origin.transform.position.z;
-                        var deltaY = Origin.transform.position.x - wPoint.x;
+                        var deltaX = Origin.transform.position.z - wPoint.z;
+                        var deltaY = wPoint.x - Origin.transform.position.x;
 
                         var angle = Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
 
-                        angle += 180;
 
-                        Debug.Log(angle);
-                        _lastGroup.Rotate(angle);
+                        _lastGroup.Rotate(angle - _lastRotation);
+
+                        _lastRotation = angle;
                     }
                 }
                 else if (Input.touches[0].phase == TouchPhase.Ended)
@@ -55,15 +69,13 @@ namespace Assets.Scripts
 
                         var wPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
 
-                        var deltaX = wPoint.z - Origin.transform.position.z;
-                        var deltaY = Origin.transform.position.x - wPoint.x;
+                        var deltaX = Origin.transform.position.z - wPoint.z;
+                        var deltaY = wPoint.x - Origin.transform.position.x;
 
                         var angle = Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
+                        _lastGroup.Rotate(angle - _lastRotation);
 
-                        angle += 180;
-
-                        Debug.Log(angle);
-                        _lastGroup.Rotate(angle);
+                        _lastRotation = angle;
                     }
                 }
             }

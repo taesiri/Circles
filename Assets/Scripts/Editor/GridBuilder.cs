@@ -20,6 +20,10 @@ namespace Assets.Scripts.Editor
             {
                 GenerateGrid();
             }
+            if (GUILayout.Button("Generate Grid 2"))
+            {
+                GenerateGrid2();
+            }
             if (GUILayout.Button("Clear Childs"))
             {
                 ClearChilds();
@@ -73,7 +77,36 @@ namespace Assets.Scripts.Editor
                     objects[i] = (GameObject) Instantiate(currentObject.CirclePrefab, currentObject.CenterTransform.position + Vector3.right*j, Quaternion.identity);
                     objects[i].transform.RotateAround(currentObject.CenterTransform.position, Vector3.up, i*currentObject.Aangle);
                     objects[i].transform.parent = group.transform;
+                    objects[i].AddComponent<CircleScript>();
+                    var cfull = objects[i].AddComponent<Colorful>();
+                    cfull.MatColor = GeneratoeColor();
+                }
+            }
+        }
 
+        public void GenerateGrid2()
+        {
+            var currentObject = (Generator) target;
+
+
+            for (int j = 1; j < currentObject.Radius; j += currentObject.RIncerement)
+            {
+                var group = new GameObject(string.Format("Circle Gorup {0}", j.ToString()));
+                group.transform.parent = currentObject.transform;
+                var rs = group.AddComponent<RotationScript>();
+
+                rs.RotationSpeed = (_randomGenerator.Next(0, 100) - 50)/10f;
+
+                for (int i = 0; i < currentObject.NumberOfCircles; i++)
+                {
+                    currentObject.Aangle = 360/(float) (currentObject.NumberOfCircles);
+
+                    var objects = new GameObject[currentObject.NumberOfCircles];
+
+                    objects[i] = (GameObject) Instantiate(currentObject.CirclePrefab, currentObject.CenterTransform.position + Vector3.right*j, Quaternion.identity);
+                    objects[i].transform.RotateAround(currentObject.CenterTransform.position, Vector3.up, i*currentObject.Aangle);
+                    objects[i].transform.parent = group.transform;
+                    objects[i].AddComponent<CircleScript>();
                     var cfull = objects[i].AddComponent<Colorful>();
                     cfull.MatColor = GeneratoeColor();
                 }

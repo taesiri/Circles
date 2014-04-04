@@ -6,6 +6,9 @@ namespace Assets.Scripts
     {
         public float RotationSpeed = 10;
 
+
+        private float _diff = 0;
+
         private void Start()
         {
         }
@@ -17,7 +20,7 @@ namespace Assets.Scripts
 
         public void Rotate(float angle)
         {
-            transform.rotation = Quaternion.Euler(new Vector3(0, angle, 0));
+            transform.Rotate(Vector3.up, angle);
         }
     }
 }
