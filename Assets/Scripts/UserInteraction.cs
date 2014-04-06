@@ -7,9 +7,8 @@ namespace Assets.Scripts
         private bool _isHit = false;
         public Transform Origin;
         private RotationScript _lastGroup;
-
-
         private float _lastRotation;
+        private GameObject _hitObjec;
 
         private void Update()
         {
@@ -22,9 +21,10 @@ namespace Assets.Scripts
                     RaycastHit hitInfo;
                     Physics.Raycast(ray, out hitInfo);
 
-
                     if (hitInfo.collider)
                     {
+                        _hitObjec = hitInfo.collider.gameObject;
+
                         var circle = hitInfo.collider.gameObject.GetComponent<CircleScript>();
                         if (circle)
                             circle.SetMatColorForSeconds(Color.red, 10);
@@ -34,13 +34,7 @@ namespace Assets.Scripts
 
                         //=============================================================================================
 
-                        var wPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
-
-                        var deltaX = Origin.transform.position.z - wPoint.z;
-                        var deltaY = wPoint.x - Origin.transform.position.x;
-
-                        var angle = Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
-
+                        var angle = CalculateAngle();
                         _lastRotation = angle;
                     }
                 }
@@ -48,16 +42,8 @@ namespace Assets.Scripts
                 {
                     if (_isHit)
                     {
-                        var wPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
-
-                        var deltaX = Origin.transform.position.z - wPoint.z;
-                        var deltaY = wPoint.x - Origin.transform.position.x;
-
-                        var angle = Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
-
-
+                        var angle = CalculateAngle();
                         _lastGroup.Rotate(angle - _lastRotation);
-
                         _lastRotation = angle;
                     }
                 }
@@ -66,22 +52,40 @@ namespace Assets.Scripts
                     if (_isHit)
                     {
                         _isHit = false;
-
-                        var wPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
-
-                        var deltaX = Origin.transform.position.z - wPoint.z;
-                        var deltaY = wPoint.x - Origin.transform.position.x;
-
-                        var angle = Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
+                        var angle = CalculateAngle();
                         _lastGroup.Rotate(angle - _lastRotation);
-
                         _lastRotation = angle;
+                        Nber();
                     }
                 }
             }
             else
             {
                 _isHit = false;
+            }
+        }
+
+
+        public float CalculateAngle()
+        {
+            var wPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
+
+            var deltaX = Origin.transform.position.z - wPoint.z;
+            var deltaY = wPoint.x - Origin.transform.position.x;
+
+            return Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
+        }
+
+        private void Nber()
+        {
+            var parentGroupScript = _hitObjec.transform.parent.gameObject.GetComponent<GroupScript>();
+
+
+            var r = parentGroupScript.NextGroup.FindGameObject(_hitObjec.transform.rotation.eulerAngles.y);
+
+            if (r)
+            {
+                Destroy(r);
             }
         }
     }

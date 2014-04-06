@@ -9,7 +9,7 @@ namespace Assets.Scripts
 
         public void Start()
         {
-            renderer.material.color = MatColor;
+            //renderer.material.color = MatColor;
         }
     }
 }

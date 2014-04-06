@@ -9,7 +9,7 @@ namespace Assets.Scripts.Editor
     [CustomEditor(typeof (Generator))]
     public class GridBuilder : UnityEditor.Editor
     {
-        private Random _randomGenerator = new Random(DateTime.Now.Millisecond);
+        private readonly Random _randomGenerator = new Random(DateTime.Now.Millisecond);
 
         public override void OnInspectorGUI()
         {
@@ -23,6 +23,10 @@ namespace Assets.Scripts.Editor
             if (GUILayout.Button("Generate Grid 2"))
             {
                 GenerateGrid2();
+            }
+            if (GUILayout.Button("Generate Game Board"))
+            {
+                GenerateGameBoard();
             }
             if (GUILayout.Button("Clear Childs"))
             {
@@ -63,7 +67,7 @@ namespace Assets.Scripts.Editor
             GroupScript prev = null;
             for (int j = 1; j < currentObject.Radius; j += currentObject.RIncerement)
             {
-                var group = new GameObject(string.Format("Circle Gorup {0}", j.ToString()));
+                var group = new GameObject(string.Format("Circle Gorup {0}", j));
                 var groupSCript = group.AddComponent<GroupScript>();
 
                 if (prev != null)
@@ -104,7 +108,7 @@ namespace Assets.Scripts.Editor
 
             for (int j = 1; j < currentObject.Radius; j += currentObject.RIncerement)
             {
-                var group = new GameObject(string.Format("Circle Gorup {0}", j.ToString()));
+                var group = new GameObject(string.Format("Circle Gorup {0}", j));
                 group.AddComponent<GroupScript>();
 
                 group.transform.parent = currentObject.transform;
@@ -126,6 +130,73 @@ namespace Assets.Scripts.Editor
                     var cfull = objects[i].AddComponent<Colorful>();
                     cfull.MatColor = GeneratoeColor();
                 }
+            }
+        }
+
+
+        public void GenerateGameBoard()
+        {
+            var currentObject = (Generator) target;
+
+
+            GroupScript prevGroup = null;
+
+            for (int j = 1; j < currentObject.Radius; j += currentObject.RIncerement)
+            {
+                var newGroupObject = new GameObject(string.Format("Gorup {0}", j));
+                var groupScript = newGroupObject.AddComponent<GroupScript>();
+                newGroupObject.transform.parent = currentObject.transform;
+
+                groupScript.CellChilds = new CellScript[currentObject.NumberOfCircles];
+
+                if (prevGroup != null)
+                {
+                    groupScript.PrevGroup = prevGroup;
+                    prevGroup.NextGroup = groupScript;
+                }
+
+
+                CellScript prevCell = null;
+                CellScript first = null;
+                for (int i = 0; i < currentObject.NumberOfCircles; i++)
+                {
+                    currentObject.Aangle = 360/(float) (currentObject.NumberOfCircles);
+
+                    var objects = new GameObject[currentObject.NumberOfCircles];
+
+                    objects[i] = (GameObject) Instantiate(currentObject.CirclePrefab, currentObject.CenterTransform.position + Vector3.right*(j + currentObject.CenterOffset) + Vector3.right*j*currentObject.MiddleOffset, Quaternion.identity);
+                    objects[i].name = string.Format("GenNode {0}:{1}", j, i);
+                    objects[i].transform.RotateAround(currentObject.CenterTransform.position, Vector3.up, i*currentObject.Aangle);
+                    objects[i].transform.parent = newGroupObject.transform;
+
+
+                    var cs = objects[i].GetComponent<CellScript>();
+                    if (prevCell != null)
+                    {
+                        cs.Left = prevCell;
+                        prevCell.Right = cs;
+                    }
+                    else
+                    {
+                        first = cs;
+                    }
+
+                    prevCell = cs;
+
+                    groupScript.CellChilds[i] = cs;
+                    cs.Index = i;
+                }
+
+                if (first != null)
+                {
+                    first.Left = prevCell;
+                    prevCell.Right = first;
+                }
+
+
+                newGroupObject.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+
+                prevGroup = groupScript;
             }
         }
 

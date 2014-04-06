@@ -10,6 +10,8 @@ namespace Assets.Scripts
         public Transform CenterTransform;
         public int RIncerement = 1;
         public float Aangle;
+        public float CenterOffset = 2.0f;
+        public float MiddleOffset = 2.0f;
 
         private void Start()
         {
