@@ -87,6 +87,9 @@ namespace Assets.Scripts
             var indexer = new RingIndexHelper(CellChilds.Length);
             var indexes = indexer.GenerateFullCycle(index);
 
+
+           // Debug.Log(index);
+
             //for (int i = 0; i < indexes.Length-1; i++)
             //{
             //    if (CellChilds[indexes[i]].CellValue == CellChilds[indexes[i + 1]].CellValue)

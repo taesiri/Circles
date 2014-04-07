@@ -16,6 +16,7 @@ namespace Assets.Scripts
         public GUISkin DefaultSkin;
         public Texture2D MenuTexture;
 
+        private GameObject _lastHitObject;
         public GUILocationHelper Location = new GUILocationHelper();
 
         private Vector2 _fingerPositionFirst;
@@ -44,18 +45,29 @@ namespace Assets.Scripts
                         _lastBeginAngle = angle;
                         _hitCell = hitInfo.collider.gameObject.GetComponent<CellScript>();
                         _hitGroup = hitInfo.collider.gameObject.transform.parent.GetComponent<GroupScript>();
-
+                        _lastHitObject = hitInfo.collider.gameObject;
                         _fingerPositionFirst = hitInfo.point;
                     }
                 }
                 else if (Input.touches[0].phase != TouchPhase.Ended)
                 {
-                    //if (_isHit)
-                    //{
-                    //    var angle = CalculateAngle();
-                    //    _lastGroup.Rotate(angle - _lastRotation);
-                    //    _lastRotation = angle;
-                    //}
+                    var worldPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
+
+
+                    var startPoint = _hitCell.transform.position;
+                    var endPoint = new Vector3(_hitCell.transform.parent.position.x, _hitCell.transform.position.y, _hitCell.transform.parent.position.z);
+
+                    var lastTouchPoint = new Vector3(worldPoint.x, endPoint.y, worldPoint.z);
+
+                    Debug.DrawLine(startPoint, lastTouchPoint, Color.blue);
+                    Debug.DrawLine(startPoint, endPoint, Color.red);
+
+
+                    var line1 = endPoint - startPoint;
+                    var line2 = lastTouchPoint - startPoint;
+
+
+                    Debug.Log(CalculateAngle(line1, line2));
                 }
                 else if (Input.touches[0].phase == TouchPhase.Ended)
                 {
@@ -70,9 +82,14 @@ namespace Assets.Scripts
                         var absMovement = Mathf.Abs(_lastBeginAngle - endAngle);
                         var fingerPositionLast = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
 
+
+                        //Debug.Log(string.Format("Abs Rotate {0}", absMovement));
+                        //Debug.Log(string.Format("Rotation from Begining {0}", CalculateAngle(_lastHitObject.transform.position)));
+
+
                         if (absMovement > Threshold)
                         {
-                            Debug.Log(string.Format("Start Angle {0}, End Angle {1}", _lastBeginAngle, endAngle));
+                            //Debug.Log(string.Format("Start Angle {0}, End Angle {1}", _lastBeginAngle, endAngle));
                             //_hitObjec.transform.parent.transform.Rotate(Vector3.up, sign*RotationUnit);
 
                             _hitGroup.Rotate(sign*60, _hitCell.Index);
@@ -86,7 +103,7 @@ namespace Assets.Scripts
                         {
                         }
 
-                        Debug.Log(((Vector2) fingerPositionLast - _fingerPositionFirst).ToString());
+                        //Debug.Log(((Vector2) fingerPositionLast - _fingerPositionFirst).ToString());
                     }
                 }
             }
@@ -104,6 +121,25 @@ namespace Assets.Scripts
             var deltaY = wPoint.x - Origin.transform.position.x;
 
             return Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
+        }
+
+        public float CalculateAngle(Vector3 origin)
+        {
+            var wPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
+
+            var deltaX = origin.z - wPoint.z;
+            var deltaY = wPoint.x - origin.x;
+
+            return Mathf.Atan2(deltaX, deltaY)*Mathf.Rad2Deg;
+        }
+
+        public float CalculateAngle(Vector3 line1, Vector3 line2)
+        {
+            var theta1 = Mathf.Atan2(line1.z, line1.x)*Mathf.Rad2Deg;
+            var theta2 = Mathf.Atan2(line2.z, line2.x)*Mathf.Rad2Deg;
+
+
+            return theta2 - theta1;
         }
 
         public void OnGUI()
