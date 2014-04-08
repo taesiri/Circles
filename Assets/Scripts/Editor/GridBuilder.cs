@@ -194,9 +194,11 @@ namespace Assets.Scripts.Editor
                 }
 
 
-                newGroupObject.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                newGroupObject.transform.localScale = Vector3.one*currentObject.NodeScales;
 
                 prevGroup = groupScript;
+
+                currentObject.GetComponent<GameManager>().RotationUnit = 360.0f/(float) currentObject.NumberOfCircles;
             }
         }
 

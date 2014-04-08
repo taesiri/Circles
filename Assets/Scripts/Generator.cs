@@ -12,6 +12,7 @@ namespace Assets.Scripts
         public float Aangle;
         public float CenterOffset = 2.0f;
         public float MiddleOffset = 2.0f;
+        public float NodeScales = 1.95f;
 
         private void Start()
         {

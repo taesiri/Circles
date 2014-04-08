@@ -8,18 +8,19 @@ namespace Assets.Scripts
 
         private bool _isHit = false;
         public float Threshold = 20f; // In Degrees!
+        public float PosThreshold = 0.9f; // In Degrees!
         private CellScript _hitCell;
         private GroupScript _hitGroup;
-        private float _lastBeginAngle;
 
         public float RotationUnit = 60;
         public GUISkin DefaultSkin;
         public Texture2D MenuTexture;
-
-        private GameObject _lastHitObject;
         public GUILocationHelper Location = new GUILocationHelper();
 
+        private float _lastBeginAngle;
         private Vector2 _fingerPositionFirst;
+        private GameObject _lastHitObject;
+
 
         public void Start()
         {
@@ -51,23 +52,26 @@ namespace Assets.Scripts
                 }
                 else if (Input.touches[0].phase != TouchPhase.Ended)
                 {
-                    var worldPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
+                    if (_isHit)
+                    {
+                        var worldPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
 
 
-                    var startPoint = _hitCell.transform.position;
-                    var endPoint = new Vector3(_hitCell.transform.parent.position.x, _hitCell.transform.position.y, _hitCell.transform.parent.position.z);
+                        var startPoint = _hitCell.transform.position;
+                        var endPoint = new Vector3(_hitCell.transform.parent.position.x, _hitCell.transform.position.y, _hitCell.transform.parent.position.z);
 
-                    var lastTouchPoint = new Vector3(worldPoint.x, endPoint.y, worldPoint.z);
+                        var lastTouchPoint = new Vector3(worldPoint.x, endPoint.y, worldPoint.z);
 
-                    Debug.DrawLine(startPoint, lastTouchPoint, Color.blue);
-                    Debug.DrawLine(startPoint, endPoint, Color.red);
-
-
-                    var line1 = endPoint - startPoint;
-                    var line2 = lastTouchPoint - startPoint;
+                        Debug.DrawLine(startPoint, lastTouchPoint, Color.blue);
+                        Debug.DrawLine(startPoint, endPoint, Color.red);
 
 
-                    Debug.Log(Helper.TruncateAngle(CalculateAngle(line1, line2)));
+                        //var line1 = endPoint - startPoint;
+                        //var line2 = lastTouchPoint - startPoint;
+
+
+                        //Debug.Log(Helper.TruncateAngle(CalculateAngle(line1, line2)));
+                    }
                 }
                 else if (Input.touches[0].phase == TouchPhase.Ended)
                 {
@@ -75,41 +79,43 @@ namespace Assets.Scripts
                     {
                         _isHit = false;
 
+                        var worldPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
 
+                        var startPoint = _hitCell.transform.position;
+                        var endPoint = new Vector3(_hitCell.transform.parent.position.x, _hitCell.transform.position.y, _hitCell.transform.parent.position.z);
 
-						var worldPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
-						
-						
-						var startPoint = _hitCell.transform.position;
-						var endPoint = new Vector3(_hitCell.transform.parent.position.x, _hitCell.transform.position.y, _hitCell.transform.parent.position.z);
-						
-						var lastTouchPoint = new Vector3(worldPoint.x, endPoint.y, worldPoint.z);
-						
-						Debug.DrawLine(startPoint, lastTouchPoint, Color.blue);
-						Debug.DrawLine(startPoint, endPoint, Color.red);
-						
-						
-						var line1 = endPoint - startPoint;
-						var line2 = lastTouchPoint - startPoint;
-						var diffAngle = Helper.TruncateAngle(CalculateAngle(line1, line2));
+                        var lastTouchPoint = new Vector3(worldPoint.x, endPoint.y, worldPoint.z);
 
+                        Debug.DrawLine(startPoint, lastTouchPoint, Color.blue);
+                        Debug.DrawLine(startPoint, endPoint, Color.red);
 
-						if ( 0 < diffAngle && diffAngle < 40.0f) {
-							Debug.Log("Inner");
-						}
-						else if ( diffAngle < 359 && diffAngle > 360 - 40.0f) {
-							Debug.Log("Inner");
-						}
-						else if ( diffAngle < 180 + 30.0f && diffAngle > 180 - 30.0f) {
-							// Outer
-							Debug.Log("Outer");
-						}
-						else if ( diffAngle < 180 - 30.0f && diffAngle > 40) {
-							_hitGroup.Rotate(1*60, _hitCell.Index);
-						}
-						else if ( diffAngle < 360 - 40.0f && diffAngle > 180 - 30.0f) {
-							_hitGroup.Rotate(-1*60, _hitCell.Index);
-						}
+                        var line1 = endPoint - startPoint;
+                        var line2 = lastTouchPoint - startPoint;
+                        var diffAngle = Helper.TruncateAngle(CalculateAngle(line1, line2));
+
+                        if (line2.magnitude > PosThreshold)
+                        {
+                            if (0 < diffAngle && diffAngle < 40.0f)
+                            {
+                                _hitGroup.MoveDiagonal(_hitCell, MovementType.GoInside);
+                            }
+                            else if (diffAngle < 359 && diffAngle > 360 - 40.0f)
+                            {
+                                _hitGroup.MoveDiagonal(_hitCell, MovementType.GoInside);
+                            }
+                            else if (diffAngle < 180 + 30.0f && diffAngle > 180 - 30.0f)
+                            {
+                                _hitGroup.MoveDiagonal(_hitCell, MovementType.GoOutSide);
+                            }
+                            else if (diffAngle < 180 - 30.0f && diffAngle > 40)
+                            {
+                                _hitGroup.Rotate(1*RotationUnit, _hitCell.Index);
+                            }
+                            else if (diffAngle < 360 - 40.0f && diffAngle > 180 - 30.0f)
+                            {
+                                _hitGroup.Rotate(-1*RotationUnit, _hitCell.Index);
+                            }
+                        }
                     }
                 }
             }
