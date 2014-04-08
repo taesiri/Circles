@@ -67,7 +67,7 @@ namespace Assets.Scripts
                     var line2 = lastTouchPoint - startPoint;
 
 
-                    Debug.Log(CalculateAngle(line1, line2));
+                    Debug.Log(Helper.TruncateAngle(CalculateAngle(line1, line2)));
                 }
                 else if (Input.touches[0].phase == TouchPhase.Ended)
                 {
@@ -75,35 +75,41 @@ namespace Assets.Scripts
                     {
                         _isHit = false;
 
-                        var endAngle = CalculateAngle();
-                        var sign = _lastBeginAngle - endAngle > 0 ? -1 : 1;
 
 
-                        var absMovement = Mathf.Abs(_lastBeginAngle - endAngle);
-                        var fingerPositionLast = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
+						var worldPoint = Camera.main.ScreenToWorldPoint(Input.touches[0].position);
+						
+						
+						var startPoint = _hitCell.transform.position;
+						var endPoint = new Vector3(_hitCell.transform.parent.position.x, _hitCell.transform.position.y, _hitCell.transform.parent.position.z);
+						
+						var lastTouchPoint = new Vector3(worldPoint.x, endPoint.y, worldPoint.z);
+						
+						Debug.DrawLine(startPoint, lastTouchPoint, Color.blue);
+						Debug.DrawLine(startPoint, endPoint, Color.red);
+						
+						
+						var line1 = endPoint - startPoint;
+						var line2 = lastTouchPoint - startPoint;
+						var diffAngle = Helper.TruncateAngle(CalculateAngle(line1, line2));
 
 
-                        //Debug.Log(string.Format("Abs Rotate {0}", absMovement));
-                        //Debug.Log(string.Format("Rotation from Begining {0}", CalculateAngle(_lastHitObject.transform.position)));
-
-
-                        if (absMovement > Threshold)
-                        {
-                            //Debug.Log(string.Format("Start Angle {0}, End Angle {1}", _lastBeginAngle, endAngle));
-                            //_hitObjec.transform.parent.transform.Rotate(Vector3.up, sign*RotationUnit);
-
-                            _hitGroup.Rotate(sign*60, _hitCell.Index);
-
-                            //if (sign == 1)
-                            //    _hitGroup.MoveRight();
-                            //else
-                            //    _hitGroup.MoveLeft();
-                        }
-                        else
-                        {
-                        }
-
-                        //Debug.Log(((Vector2) fingerPositionLast - _fingerPositionFirst).ToString());
+						if ( 0 < diffAngle && diffAngle < 40.0f) {
+							Debug.Log("Inner");
+						}
+						else if ( diffAngle < 359 && diffAngle > 360 - 40.0f) {
+							Debug.Log("Inner");
+						}
+						else if ( diffAngle < 180 + 30.0f && diffAngle > 180 - 30.0f) {
+							// Outer
+							Debug.Log("Outer");
+						}
+						else if ( diffAngle < 180 - 30.0f && diffAngle > 40) {
+							_hitGroup.Rotate(1*60, _hitCell.Index);
+						}
+						else if ( diffAngle < 360 - 40.0f && diffAngle > 180 - 30.0f) {
+							_hitGroup.Rotate(-1*60, _hitCell.Index);
+						}
                     }
                 }
             }
